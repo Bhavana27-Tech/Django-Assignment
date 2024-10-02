@@ -61,5 +61,3 @@ def my_signal_handler(sender, instance, created, **kwargs):
 
 # Trigger the signal
 my_model_instance = MyModel.objects.create(field1="value1")
-
-
