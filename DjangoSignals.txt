@@ -1,4 +1,65 @@
-Q1: By default are django signals executed synchronously or asynchronously? Please support your answer with a code snippet that conclusively proves your stance. The code does not need to be elegant and production ready, we just need to understand your logic.
+Q1: By default are django signals executed synchronously or asynchronously? 
+
 Ans: By default, Django signals are executed synchronously. Which means that the signal handler function is called directly within the same thread as  the event that triggered the signal.
+
+
+Code Snippet 
+------------
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+from .models import MyModel
+
+@receiver(post_save, sender=MyModel)
+def my_signal_handler(sender,   
+ instance, **kwargs):
+    print("Signal handler is being executed synchronously.")
+    # Perform long-running tasks here
+    time.sleep(5)  # Simulate a long-running task
+
+==============================================================================
+
+Q2. Do django signals run in the same thread as the caller?
+
+Ans:Yes, Django signals are executed in the same thread as the caller. Which means that signal handler function is called directly within the same thread as the event triggered the signal.
+
+Code Snippet 
+------------
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+from .models import MyModel
+
+@receiver(post_save, sender=MyModel)
+def my_signal_handler(sender,   
+ instance, **kwargs):
+    print("Signal handler is being executed synchronously.")
+    # Perform long-running tasks here
+    time.sleep(5)  # Simulate a long-running task
+
+
+Q3.By default do django signals run in the same database transaction as the caller? 
+
+Ans:Django signals do not run in the same database transaction as the caller by default. This means that any changes made within a signal handler will be committed in a separate transaction, independent of the transaction that triggered the signal.
+
+Code Snippet 
+------------
+from django.db import transaction
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .models import MyModel, RelatedModel
+
+@receiver(post_save, sender=MyModel)
+def my_signal_handler(sender, instance, created, **kwargs):
+    with transaction.atomic():
+        related_object = RelatedModel.objects.create(my_model=instance)
+        if created:
+            # Raise an exception to simulate a rollback
+            raise Exception("Error during signal handling")
+
+# Trigger the signal
+my_model_instance = MyModel.objects.create(field1="value1")
 
 
